@@ -31,8 +31,8 @@ void sort_timer_lst::add_timer(util_timer *timer)
     if (timer->expire < head->expire)
     {
         timer->next = head;
-        head->prev = timer;
-        head = timer;
+        head->prev  = timer;
+        head        = timer;
         return;
     }
     add_timer(timer, head);
@@ -44,14 +44,14 @@ void sort_timer_lst::adjust_timer(util_timer *timer)
         return;
     }
     util_timer *tmp = timer->next;
-    if (!tmp || (timer->expire < tmp->expire))//如果下一个没有比他更早，直接返回
+    if (!tmp || (timer->expire < tmp->expire))  //如果下一个没有比他更早，直接返回
     {
         return;
     }
     if (timer == head)
     {
-        head = head->next;
-        head->prev = NULL;
+        head        = head->next;
+        head->prev  = NULL;
         timer->next = NULL;
         add_timer(timer, head);
     }
@@ -77,14 +77,14 @@ void sort_timer_lst::del_timer(util_timer *timer)
     }
     if (timer == head)
     {
-        head = head->next;
+        head       = head->next;
         head->prev = NULL;
         delete timer;
         return;
     }
     if (timer == tail)
     {
-        tail = tail->prev;
+        tail       = tail->prev;
         tail->next = NULL;
         delete timer;
         return;
@@ -99,8 +99,8 @@ void sort_timer_lst::tick()
     {
         return;
     }
-    
-    time_t cur = time(NULL);
+
+    time_t cur      = time(NULL);
     util_timer *tmp = head;
     while (tmp)
     {
@@ -122,26 +122,26 @@ void sort_timer_lst::tick()
 void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head)
 {
     util_timer *prev = lst_head;
-    util_timer *tmp = prev->next;
+    util_timer *tmp  = prev->next;
     while (tmp)
     {
         if (timer->expire < tmp->expire)
         {
-            prev->next = timer;
+            prev->next  = timer;
             timer->next = tmp;
-            tmp->prev = timer;
+            tmp->prev   = timer;
             timer->prev = prev;
             break;
         }
         prev = tmp;
-        tmp = tmp->next;
+        tmp  = tmp->next;
     }
     if (!tmp)
     {
-        prev->next = timer;
+        prev->next  = timer;
         timer->prev = prev;
         timer->next = NULL;
-        tail = timer;
+        tail        = timer;
     }
 }
 
@@ -181,7 +181,7 @@ void Utils::sig_handler(int sig)
 {
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
-    int msg = sig;
+    int msg        = sig;
     send(u_pipefd[1], (char *)&msg, 1, 0);
     errno = save_errno;
 }

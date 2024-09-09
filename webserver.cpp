@@ -2,14 +2,14 @@
 
 WebServer::WebServer()
 {
-    //http_conn类对象
+    // http_conn类对象
     users = new http_conn[MAX_FD];
 
-    //root文件夹路径
+    // root文件夹路径
     char server_path[200];
     getcwd(server_path, 200);
     char root[6] = "/root";
-    m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
+    m_root       = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root);
 
@@ -28,57 +28,66 @@ WebServer::~WebServer()
     delete m_pool;
 }
 
-void WebServer::init(int port, string user, string passWord, string databaseName, int log_write, 
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
+void WebServer::init(int port,
+                     string user,
+                     string passWord,
+                     string databaseName,
+                     int log_write,
+                     int opt_linger,
+                     int trigmode,
+                     int sql_num,
+                     int thread_num,
+                     int close_log,
+                     int actor_model)
 {
-    m_port = port;
-    m_user = user;
-    m_passWord = passWord;
+    m_port         = port;
+    m_user         = user;
+    m_passWord     = passWord;
     m_databaseName = databaseName;
-    m_sql_num = sql_num;
-    m_thread_num = thread_num;
-    m_log_write = log_write;
-    m_OPT_LINGER = opt_linger;
-    m_TRIGMode = trigmode;
-    m_close_log = close_log;
-    m_actormodel = actor_model;
+    m_sql_num      = sql_num;
+    m_thread_num   = thread_num;
+    m_log_write    = log_write;
+    m_OPT_LINGER   = opt_linger;
+    m_TRIGMode     = trigmode;
+    m_close_log    = close_log;
+    m_actormodel   = actor_model;
 }
 
 void WebServer::trig_mode()
 {
-    //LT + LT
+    // LT + LT
     if (0 == m_TRIGMode)
     {
         m_LISTENTrigmode = 0;
-        m_CONNTrigmode = 0;
+        m_CONNTrigmode   = 0;
     }
-    //LT + ET
+    // LT + ET
     else if (1 == m_TRIGMode)
     {
         m_LISTENTrigmode = 0;
-        m_CONNTrigmode = 1;
+        m_CONNTrigmode   = 1;
     }
-    //ET + LT
+    // ET + LT
     else if (2 == m_TRIGMode)
     {
         m_LISTENTrigmode = 1;
-        m_CONNTrigmode = 0;
+        m_CONNTrigmode   = 0;
     }
-    //ET + ET
+    // ET + ET
     else if (3 == m_TRIGMode)
     {
         m_LISTENTrigmode = 1;
-        m_CONNTrigmode = 1;
+        m_CONNTrigmode   = 1;
     }
 }
 
 void WebServer::log_write()
 {
-    if (0 == m_close_log)//默认是0，0是有日志
+    if (0 == m_close_log)  //默认是0，0是有日志
     {
         //初始化日志
         if (1 == m_log_write)
-            Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 800);//大于0代表异步
+            Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 800);  //大于0代表异步
         else
             Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 0);
     }
@@ -122,9 +131,9 @@ void WebServer::eventListen()
     int ret = 0;
     struct sockaddr_in address;
     bzero(&address, sizeof(address));
-    address.sin_family = AF_INET;
+    address.sin_family      = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
-    address.sin_port = htons(m_port);
+    address.sin_port        = htons(m_port);
 
     int flag = 1;
     setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
@@ -135,7 +144,7 @@ void WebServer::eventListen()
 
     utils.init(TIMESLOT);
 
-    //epoll创建内核事件表
+    // epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
@@ -155,7 +164,7 @@ void WebServer::eventListen()
     alarm(TIMESLOT);
 
     //工具类,信号和描述符基础操作
-    Utils::u_pipefd = m_pipefd;
+    Utils::u_pipefd  = m_pipefd;
     Utils::u_epollfd = m_epollfd;
 }
 
@@ -166,13 +175,13 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
     users_timer[connfd].address = client_address;
-    users_timer[connfd].sockfd = connfd;
-    util_timer *timer = new util_timer;
-    timer->user_data = &users_timer[connfd];
-    timer->cb_func = cb_func;
-    time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;
-    users_timer[connfd].timer = timer;
+    users_timer[connfd].sockfd  = connfd;
+    util_timer *timer           = new util_timer;
+    timer->user_data            = &users_timer[connfd];
+    timer->cb_func              = cb_func;
+    time_t cur                  = time(NULL);
+    timer->expire               = cur + 3 * TIMESLOT;
+    users_timer[connfd].timer   = timer;
     utils.m_timer_lst.add_timer(timer);
 }
 
@@ -180,8 +189,8 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
 //并对新的定时器在链表上的位置进行调整
 void WebServer::adjust_timer(util_timer *timer)
 {
-    time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;//增加三个时间槽
+    time_t cur    = time(NULL);
+    timer->expire = cur + 3 * TIMESLOT;  //增加三个时间槽
     utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
@@ -262,16 +271,16 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
         {
             switch (signals[i])
             {
-            case SIGALRM:
-            {
-                timeout = true;
-                break;
-            }
-            case SIGTERM:
-            {
-                stop_server = true;
-                break;
-            }
+                case SIGALRM:
+                {
+                    timeout = true;
+                    break;
+                }
+                case SIGTERM:
+                {
+                    stop_server = true;
+                    break;
+                }
             }
         }
     }
@@ -280,22 +289,21 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
 
 void WebServer::
 
-
-dealwithread(int sockfd)
+    dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
 
-    //reactor
+    // reactor
     if (1 == m_actormodel)
     {
-        if (timer)//收到消息然后就刷新时间
+        if (timer)  //收到消息然后就刷新时间
         {
             adjust_timer(timer);
         }
 
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(users + sockfd, 0);
-        
+
         while (true)
         {
             if (1 == users[sockfd].improv)
@@ -312,7 +320,7 @@ dealwithread(int sockfd)
     }
     else
     {
-        //proactor
+        // proactor
         if (users[sockfd].read_once())
         {
             LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
@@ -335,7 +343,7 @@ dealwithread(int sockfd)
 void WebServer::dealwithwrite(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
-    //reactor
+    // reactor
     if (1 == m_actormodel)
     {
         if (timer)
@@ -361,7 +369,7 @@ void WebServer::dealwithwrite(int sockfd)
     }
     else
     {
-        //proactor
+        // proactor
         if (users[sockfd].write())
         {
             LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
@@ -380,7 +388,7 @@ void WebServer::dealwithwrite(int sockfd)
 
 void WebServer::eventLoop()
 {
-    bool timeout = false;
+    bool timeout     = false;
     bool stop_server = false;
 
     while (!stop_server)
