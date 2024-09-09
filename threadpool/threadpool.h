@@ -113,14 +113,14 @@ void threadpool<T>::run()
         m_queuelocker.unlock();
         if (!request)
             continue;
-        if (1 == m_actor_model)
+        if (1 == m_actor_model)//reactor模型
         {
             if (0 == request->m_state)
             {
                 if (request->read_once())
                 {
                     request->improv = 1;
-                    connectionRAII mysqlcon(&request->mysql, m_connPool);
+                    connectionRAII mysqlcon(&request->mysql, m_connPool);//从数据库池给request分配个连接
                     request->process();
                 }
                 else

@@ -39,8 +39,8 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     m_split_lines = split_lines;
 
     time_t t = time(NULL);
-    struct tm *sys_tm = localtime(&t);
-    struct tm my_tm = *sys_tm;
+    struct tm *sys_tm = localtime(&t);//避免下次调用的指针内容被改变，重新赋值
+    struct tm my_tm = *sys_tm;//
 
  
     const char *p = strrchr(file_name, '/');

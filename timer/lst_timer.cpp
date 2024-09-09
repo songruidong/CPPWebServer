@@ -44,7 +44,7 @@ void sort_timer_lst::adjust_timer(util_timer *timer)
         return;
     }
     util_timer *tmp = timer->next;
-    if (!tmp || (timer->expire < tmp->expire))
+    if (!tmp || (timer->expire < tmp->expire))//如果下一个没有比他更早，直接返回
     {
         return;
     }

@@ -71,8 +71,8 @@ public:
 
     int m_listenfd;
     int m_OPT_LINGER;
-    int m_TRIGMode;
-    int m_LISTENTrigmode;
+    int m_TRIGMode;//读写ET和LT
+    int m_LISTENTrigmode;//listenfd LT还是ET
     int m_CONNTrigmode;
 
     //定时器相关

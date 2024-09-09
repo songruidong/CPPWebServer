@@ -74,11 +74,11 @@ void WebServer::trig_mode()
 
 void WebServer::log_write()
 {
-    if (0 == m_close_log)
+    if (0 == m_close_log)//默认是0，0是有日志
     {
         //初始化日志
         if (1 == m_log_write)
-            Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 800);
+            Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 800);//大于0代表异步
         else
             Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 0);
     }
@@ -89,6 +89,7 @@ void WebServer::sql_pool()
     //初始化数据库连接池
     m_connPool = connection_pool::GetInstance();
     m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+    //创建连接，信号量控制资源
 
     //初始化数据库读取表
     users->initmysql_result(m_connPool);
@@ -180,7 +181,7 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
 void WebServer::adjust_timer(util_timer *timer)
 {
     time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;
+    timer->expire = cur + 3 * TIMESLOT;//增加三个时间槽
     utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
@@ -277,21 +278,24 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     return true;
 }
 
-void WebServer::dealwithread(int sockfd)
+void WebServer::
+
+
+dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
     if (1 == m_actormodel)
     {
-        if (timer)
+        if (timer)//收到消息然后就刷新时间
         {
             adjust_timer(timer);
         }
 
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(users + sockfd, 0);
-
+        
         while (true)
         {
             if (1 == users[sockfd].improv)
