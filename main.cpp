@@ -29,9 +29,11 @@ int main(int argc, char *argv[])
     //触发模式
     server.trig_mode();
 
+    //iouring 初始化
+    server.iouring_init();
+    
     //监听
     server.eventListen();
-
     //运行
     server.eventLoop();
 

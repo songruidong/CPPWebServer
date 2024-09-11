@@ -14,7 +14,7 @@
 
 #include "./http/http_conn.h"
 #include "./threadpool/threadpool.h"
-
+#include "io_uring.h"
 const int MAX_FD           = 65536;  //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000;  //最大事件数
 const int TIMESLOT         = 5;      //最小超时单位
@@ -50,7 +50,9 @@ class WebServer
     bool dealwithsignal(bool &timeout, bool &stop_server);
     void dealwithread(int sockfd);
     void dealwithwrite(int sockfd);
-
+    void iouring_init();
+    void setup_timer();
+    void setup_listening_socket();
   public:
     //基础
     int m_port;
@@ -86,5 +88,8 @@ class WebServer
     //定时器相关
     client_data *users_timer;
     Utils utils;
+
+    //io_uring相关
+    std::unique_ptr<io_uring_handler> uring;
 };
 #endif

@@ -21,7 +21,6 @@ map<string, string> users;
 void http_conn::initmysql_result(connection_pool *connPool)
 {
     //先从连接池中取一个连接
-    std::shared_ptr<MYSQL> msql;
     MYSQL *mysql = NULL;
     connectionRAII mysqlcon(&mysql, connPool);  // RAII控制连接，释放时还给池子
 

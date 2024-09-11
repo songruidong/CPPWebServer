@@ -41,7 +41,7 @@ class Log
             fputs(single_log.c_str(), m_fp);
             m_mutex.unlock();
         }
-    }
+    };
 
   private:
     char dir_name[128];  //路径名
